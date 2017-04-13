@@ -22,11 +22,21 @@ podTemplate(
                 stage('prepare') {
                     checkout scm
                     esContaienr = docker.image('docker.elastic.co/elasticsearch/elasticsearch:5.3.0')
-                                        .run('-P -e "xpack.security.enabled=false" -e "http.host=0.0.0.0" -e "transport.host=127.0.0.1"')
+                                        .run('-e "xpack.security.enabled=false" -e "http.host=0.0.0.0" -e "transport.host=0.0.0.0"')
                 }
-
+                
                 stage('test') {
-                    echo "${hostPort(esContaienr, '9200')}"
+                    env.ELASTICSEARCH_ADDR = "${containerIP(esContaienr)}"
+                    env.ELASTICSEARCH_PORT = '9200'
+                    
+                    timeout(time: 1000, unit: 'SECONDS') {
+                        waitUntil {
+                            def r = sh script: 'curl -XGET http://$ELASTICSEARCH_ADDR:$ELASTICSEARCH_PORT?pretty', returnStatus: true
+                            return (r == 0)
+                        }
+                    }
+                    
+                    ansiblePlaybook colorized: true, playbook: 'stored-query-config.yaml', inventory: 'hosts'
                 }
 
             } catch (e) {
@@ -43,5 +53,9 @@ podTemplate(
 }
 
 def hostPort(container, port) {
-    return sh(script: "docker inspect -f '{{(index (index .NetworkSettings.Ports \"${port}/tcp\") 0).HostPort}}' ${container.id}", returnStdout: true)
+    return sh(script: "docker inspect -f '{{(index (index .NetworkSettings.Ports \"${port}/tcp\") 0).HostPort}}' ${container.id}", returnStdout: true).trim()
+}
+
+def containerIP(container) {
+    return sh(script: "docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${container.id}", returnStdout: true).trim()
 }
