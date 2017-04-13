@@ -1,0 +1,15 @@
+---
+- hosts: localhost
+  tasks:
+    - find:
+        paths: "/opt/ansible"
+        patterns: "\\w*\\.(yaml|yml)"
+        use_regex: True
+      
+    - shell: "ls /opt/ansible | egrep '[^entrypoint]\\w*\\.(yaml|yml)'"
+      register: dir_out
+      name: "ls /opt/ansible"
+    - debug: var=item
+      with_items: 
+        - "{{ dir_out.stdout_lines }}"
+      name: available playbook
