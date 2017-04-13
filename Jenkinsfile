@@ -18,10 +18,6 @@ podTemplate(
         ansiColor('xterm') {
             def esContaienr
 
-            def hostPort(container, port) {
-              return sh(script: "docker inspect -f '{{(index (index .NetworkSettings.Ports \"${port}/tcp\") 0).HostPort}}' ${container.id}", returnStdout: true)
-            }
-
             try {
                 stage('prepare') {
                     checkout scm
@@ -43,5 +39,9 @@ podTemplate(
                       projectRulePath: 'jenkins-rule-logparser', useProjectRule: true])
             }
         }
+    }
+
+    def hostPort(container, port) {
+        return sh(script: "docker inspect -f '{{(index (index .NetworkSettings.Ports \"${port}/tcp\") 0).HostPort}}' ${container.id}", returnStdout: true)
     }
 }
