@@ -29,7 +29,7 @@ podTemplate(
                     env.ELASTICSEARCH_ADDR = "${containerIP(esContaienr)}"
                     env.ELASTICSEARCH_PORT = '9200'
                     
-                    timeout(time: 1000, unit: 'SECONDS') {
+                    timeout(time: 60, unit: 'SECONDS') {
                         waitUntil {
                             def r = sh script: 'curl -XGET http://$ELASTICSEARCH_ADDR:$ELASTICSEARCH_PORT?pretty', returnStatus: true
                             return (r == 0)
