@@ -3,8 +3,10 @@
 {% set comma = joiner(",") %}
 {% for property in item.properties %}
 {{ comma() }}"{{ property.name }}": {
-	"type": "{{property.type}}",
-	"index": "{{property.index}}"
+	"type": "{{property.type}}"
+	{% if property.index is defined %}
+	{{ comma() }}"index": {{property.index}}
+	{% endif %}
 }
 {% endfor %},
       "dialogs":         { "type": "text", "analyzer": "{{ item.analyzer }}" }

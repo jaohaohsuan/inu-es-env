@@ -6,113 +6,91 @@
       
             {
                 "name": "startTime",
-                "type": "date",
-                "index": "not_analyzed"
+                "type": "date"
             },
             {
                 "name": "year",
-                "type": "integer",
-                "index": "not_analyzed"
+                "type": "integer"
             },
             {
                 "name": "quarter",
-                "type": "integer",
-                "index": "not_analyzed"
+                "type": "integer"
             },
             {
                 "name": "month",
-                "type": "integer",
-                "index": "not_analyzed"
+                "type": "integer"
             },
             {
                 "name": "weekYear",
-                "type": "integer",
-                "index": "not_analyzed"
+                "type": "integer"
             },
             {
                 "name": "weekDay",
-                "type": "integer",
-                "index": "not_analyzed"
+                "type": "integer"
             },
                         {
                 "name": "weekNum",
-                "type": "integer",
-                "index": "not_analyzed"
+                "type": "integer"
             },
             {
                 "name": "monthDay",
-                "type": "integer",
-                "index": "not_analyzed"
+                "type": "integer"
             },
             {
                 "name": "endTime",
-                "type": "date",
-                "index": "not_analyzed"
+                "type": "date"
             },
             {
                 "name": "length",
-                "type": "integer",
-                "index": "not_analyzed"
+                "type": "integer"
             },
             {
                 "name": "agentId",
-                "type": "text",
-                "index": "not_analyzed"
+                "type": "keyword"
             },
             {
                 "name": "agentName",
-                "type": "text",
-                "index": "not_analyzed"
+                "type": "keyword"
             },
             {
                 "name": "callDirection",
-                "type": "text",
-                "index": "not_analyzed"
+                "type": "keyword"
             },
             {
                 "name": "agentPhoneNo",
-                "type": "text",
-                "index": "not_analyzed"
+                "type": "keyword"
             },
             {
                 "name": "customerPhoneNo",
-                "type": "text",
-                "index": "not_analyzed"
+                "type": "keyword"
             },
             {
                 "name": "customerGender",
-                "type": "keyword",
-                "index": "not_analyzed"
+                "type": "keyword"
             },
             {
                 "name": "endStatus",
-                "type": "text",
-                "index": "not_analyzed"
+                "type": "keyword"
             },
             {
                 "name": "projectName",
-                "type": "text",
-                "index": "not_analyzed"
+                "type": "keyword"
             },
             {
                 "name": "mixLongestSilence",
-                "type": "integer",
-                "index": "not_analyzed"
+                "type": "integer"
             },
             {
                 "name": "r0TotalInterruption",
-                "type": "integer",
-                "index": "not_analyzed"
+                "type": "integer"
             },
             {
                 "name": "r1TotalInterruption",
-                "type": "integer",
-                "index": "not_analyzed"
+                "type": "integer"
             },
             {
                 "name": "sumTotalInterruption",
-                "type": "integer",
-                "index": "not_analyzed"
+                "type": "integer"
             }
     ]
   }
