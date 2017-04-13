@@ -36,7 +36,7 @@ podTemplate(
                         }
                     }
                     
-                    ansiblePlaybook colorized: true, playbook: 'stored-query-config.yaml', inventory: 'hosts'
+                    ansiblePlaybook colorized: true, playbook: 'stored-query-config.yaml', inventory: 'hosts', extras: '-vvv'
                 }
 
             } catch (e) {
