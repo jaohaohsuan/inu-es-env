@@ -1,6 +1,6 @@
 # match line starting with 'error ', case-insensitive
 error /(?i)^error /
-error /failed=\d*/
+error /failed=[1-9][0-9]*/
 
 # list of warnings here...
 warning /[Ww]arning/

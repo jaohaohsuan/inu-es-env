@@ -56,42 +56,42 @@
             },
             {
                 "name": "agentId",
-                "type": "string",
+                "type": "text",
                 "index": "not_analyzed"
             },
             {
                 "name": "agentName",
-                "type": "string",
+                "type": "text",
                 "index": "not_analyzed"
             },
             {
                 "name": "callDirection",
-                "type": "string",
+                "type": "text",
                 "index": "not_analyzed"
             },
             {
                 "name": "agentPhoneNo",
-                "type": "string",
+                "type": "text",
                 "index": "not_analyzed"
             },
             {
                 "name": "customerPhoneNo",
-                "type": "string",
+                "type": "text",
                 "index": "not_analyzed"
             },
             {
                 "name": "customerGender",
-                "type": "string",
+                "type": "keyword",
                 "index": "not_analyzed"
             },
             {
                 "name": "endStatus",
-                "type": "string",
+                "type": "text",
                 "index": "not_analyzed"
             },
             {
                 "name": "projectName",
-                "type": "string",
+                "type": "text",
                 "index": "not_analyzed"
             },
             {
