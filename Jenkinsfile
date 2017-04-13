@@ -40,8 +40,8 @@ podTemplate(
             }
         }
     }
+}
 
-    def hostPort(container, port) {
-        return sh(script: "docker inspect -f '{{(index (index .NetworkSettings.Ports \"${port}/tcp\") 0).HostPort}}' ${container.id}", returnStdout: true)
-    }
+def hostPort(container, port) {
+    return sh(script: "docker inspect -f '{{(index (index .NetworkSettings.Ports \"${port}/tcp\") 0).HostPort}}' ${container.id}", returnStdout: true)
 }
