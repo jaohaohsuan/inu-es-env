@@ -36,9 +36,9 @@ podTemplate(
                     env.ELASTICSEARCH_ADDR = "${containerIP(esContaienr)}"
                     env.ELASTICSEARCH_PORT = '9200'
                     
-                    parallel logs-index-template: {
+                    parallel LogsIndexTemplate: {
                         ansiblePlaybook colorized: true, playbook: 'logs-index-template.yaml', inventory: 'hosts', extras: ''
-                    }, stored-query-index: {
+                    }, StoredQueryIndex: {
                         ansiblePlaybook colorized: true, playbook: 'stored-query-config.yaml', inventory: 'hosts', extras: ''
                     },
                     failFast: false
