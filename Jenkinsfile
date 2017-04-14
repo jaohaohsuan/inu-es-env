@@ -17,15 +17,23 @@ podTemplate(
     node('inuesenv') {
         ansiColor('xterm') {
             def esContaienr
-
+            def stopElasticsearch = { }
             try {
+                
                 stage('prepare') {
                     checkout scm
-                    esContaienr = docker.image('docker.elastic.co/elasticsearch/elasticsearch:5.3.0')
-                                        .run('-e "xpack.security.enabled=false" -e "http.host=0.0.0.0" -e "transport.host=0.0.0.0"')
 
-                    env.ELASTICSEARCH_ADDR = "${containerIP(esContaienr)}"
-                    env.ELASTICSEARCH_PORT = '9200'
+                    if (params.ELASTICSEARCH_ADDR && params.ELASTICSEARCH_PORT) {   
+                        echo 'skipped'
+                        setElasticsearchEndPoint(params.ELASTICSEARCH_ADDR, params.ELASTICSEARCH_PORT)
+                    }
+                    else {
+                        esContaienr = docker.image('docker.elastic.co/elasticsearch/elasticsearch:5.3.0')
+                                            .run('-e "xpack.security.enabled=false" -e "http.host=0.0.0.0" -e "transport.host=0.0.0.0"')
+
+                        stopElasticsearch = { esContaienr.stop() }
+                        setElasticsearchEndPoint(containerIP(esContaienr), 9200)
+                    }
 
                     timeout(time: 60, unit: 'SECONDS') {
                         waitUntil {
@@ -43,7 +51,6 @@ podTemplate(
                         ansiblePlaybook colorized: true, playbook: 'stored-query-config.yaml', inventory: 'hosts', extras: ''
                     },
                     failFast: false
-                    
                 }
 
             } catch (e) {
@@ -51,12 +58,18 @@ podTemplate(
                 currentBuild.result = FAILURE
             }
             finally {
-                esContaienr.stop()
+                stopElasticsearch()
                 step([$class         : 'LogParserPublisher', failBuildOnError: true, unstableOnWarning: true, showGraphs: true,
                       projectRulePath: 'jenkins-rule-logparser', useProjectRule: true])
             }
         }
     }
+}
+
+
+def setElasticsearchEndPoint(addr, port) {
+    env.ELASTICSEARCH_ADDR = addr
+    env.ELASTICSEARCH_PORT = port
 }
 
 def hostPort(container, port) {
