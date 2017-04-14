@@ -1,0 +1,79 @@
+{
+   "template": "logs-*",
+   "settings": {
+      "number_of_shards": 5,
+      "number_of_replicas" : 1,
+      "analysis": {{ es_analysis }}
+   },
+   "mappings": {
+{% set comma = joiner(",") %}
+{% for item in inu_datasources %}
+      {{ comma() }}"{{ item.type }}": {
+         "dynamic": "dynamic",
+         "_source": { "enabled": true },
+         "dynamic_date_formats": [ "YYYY-MM-dd hh:mm:ss", "strict_date_optional_time||epoch_millis" ],
+         "dynamic_templates": [
+            {
+                  "agent": {
+                     "match_pattern": "regex",
+                     "mapping": {
+                        "analyzer": "{{ item.analyzer }}",
+                        "type": "text"
+                     },
+                     "match_mapping_type": "string",
+                     "match": "^agent\\d+$"
+                  }
+               },
+               {
+                  "customer": {
+                     "match_pattern": "regex",
+                     "mapping": {
+                        "analyzer": "{{ item.analyzer }}",
+                        "type": "text"
+                     },
+                     "match_mapping_type": "string",
+                     "match": "^customer\\d+$"
+                  }
+               },
+               {
+                  "vtt": {
+                     "match_pattern": "regex",
+                     "mapping": {
+                        "type": "keyword",
+                        "index": false
+                     },
+                     "match_mapping_type": "string",
+                     "match": "^vtt$"
+                  }
+               },
+               {
+                  "dialogs": {
+                     "match_pattern": "regex",
+                     "mapping": {
+                        "analyzer": "{{ item.analyzer }}",
+                        "type": "text"
+                     },
+                     "match_mapping_type": "string",
+                     "match": "^dialogs$"
+                  }
+               }
+
+         ],
+         "_all": {
+               "enabled": false
+            },
+         "properties": {
+{% set comma2 = joiner(",") %}
+{% for property in item.properties %}
+{{ comma2() }}"{{ property.name }}": {
+               "type": "{{property.type}}"
+{% if property.index is defined %}
+               {{ comma2() }}"index": {{property.index}}
+{% endif %}
+            }
+{% endfor %}
+         }
+      }
+{% endfor %}
+   }
+}

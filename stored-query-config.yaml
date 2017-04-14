@@ -1,9 +1,10 @@
 ---
 - hosts: localhost
+  vars_files:
+    - vars_files/connections.yaml
+    - vars_files/analysis.yaml
   vars:
-    es_address: "http://{{ lookup('env','ELASTICSEARCH_ADDR') | default('127.0.0.1') }}:{{ lookup('env','ELASTICSEARCH_PORT') | default('9200') }}"
     inu_datasources: "{{ lookup('file','inu-datasources.json') }}"
-    es_analysis: "{{ lookup('file','analysis.json') }}"
   tasks:
     - debug:
         msg: "target elasticsearch : {{ es_address }}"

@@ -23,20 +23,25 @@ podTemplate(
                     checkout scm
                     esContaienr = docker.image('docker.elastic.co/elasticsearch/elasticsearch:5.3.0')
                                         .run('-e "xpack.security.enabled=false" -e "http.host=0.0.0.0" -e "transport.host=0.0.0.0"')
-                }
-                
-                stage('test') {
-                    env.ELASTICSEARCH_ADDR = "${containerIP(esContaienr)}"
-                    env.ELASTICSEARCH_PORT = '9200'
-                    
+
                     timeout(time: 60, unit: 'SECONDS') {
                         waitUntil {
                             def r = sh script: 'curl -XGET http://$ELASTICSEARCH_ADDR:$ELASTICSEARCH_PORT?pretty', returnStatus: true
                             return (r == 0)
                         }
                     }
+                }
+                
+                stage('config') {
+                    env.ELASTICSEARCH_ADDR = "${containerIP(esContaienr)}"
+                    env.ELASTICSEARCH_PORT = '9200'
                     
-                    ansiblePlaybook colorized: true, playbook: 'stored-query-config.yaml', inventory: 'hosts', extras: '-vvv'
+                    parallel logs-index-template: {
+                        ansiblePlaybook colorized: true, playbook: 'logs-index-template.yaml', inventory: 'hosts', extras: ''
+                    }, stored-query-index: {
+                        ansiblePlaybook colorized: true, playbook: 'stored-query-config.yaml', inventory: 'hosts', extras: ''
+                    },
+                    failFast: false
                 }
 
             } catch (e) {

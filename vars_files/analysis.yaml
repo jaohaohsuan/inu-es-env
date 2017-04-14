@@ -1,0 +1,1 @@
+es_analysis: "{{ lookup('file','analysis.json') }}"

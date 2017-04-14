@@ -1,0 +1,18 @@
+---
+- hosts: localhost
+  vars_files:
+    - vars_files/connections.yaml
+    - vars_files/analysis.yaml
+  vars:
+    inu_datasources: "{{ lookup('file','inu-datasources.json') }}"
+    logs_template: "{{ lookup('template','logs-template.json.j2') }}"
+  tasks:
+    - uri: |
+        url={{ es_address }}/_template/template1
+        method=PUT
+        body_format=json
+        HEADER_Content-Type=application/json
+        body={{ logs_template }}
+        status_code=200
+      register: api_result
+      name: "Set logs index template"
