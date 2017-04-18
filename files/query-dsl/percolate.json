@@ -1,20 +1,34 @@
 {
-    "query": {
-        "percolate": {
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "ids": {
+            "type": "queries",
+            "values": [
+              "news"
+            ]
+          }
+        },
+        {
+          "percolate": {
             "field": "query",
             "document_type": "amiast",
             "document": {
-                "customer0": [
-                     "customer0-24252 时政 新闻 ",
-                     "customer0-27252 28国 元首 ",
-                     "customer0-30188  "
-                ],
-                "dialogs": [
-                     "customer0-24252 时政 新闻 ",
-                     "customer0-27252 28国 元首 ",
-                     "customer0-30188 一带一路 国际 合作 高峰 论坛 将于5月 14至15日 在 北京 举行 "
-                ]
+              "customer0": [
+                "customer0-24252 时政 新闻 ",
+                "customer0-27252 28国 元首 ",
+                "customer0-30188  "
+              ],
+              "dialogs": [
+                "customer0-24252 时政 新闻 ",
+                "customer0-27252 28国 元首 ",
+                "customer0-30188 一带一路 国际 合作 高峰 论坛 将于5月 14至15日 在 北京 举行 "
+              ]
             }
+          }
         }
+      ]
     }
+  }
 }
