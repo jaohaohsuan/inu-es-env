@@ -51,6 +51,14 @@ podTemplate(
                         ansiblePlaybook colorized: true, playbook: 'stored-query-config.yaml', inventory: 'hosts', extras: ''
                     },
                     failFast: false
+
+                    if(params.WITHOUT_FAKEDATA) {
+                        echo 'creating fake data skipped'
+                    }
+                    else {
+                        ansiblePlaybook colorized: true, playbook: 'sample-data.yaml', inventory: 'hosts', extras: ''
+                    }
+
                 }
 
                 stage('package') {
