@@ -53,6 +53,25 @@ podTemplate(
                     failFast: false
                 }
 
+                stage('package') {
+                    withDockerRegistry(url: 'https://index.docker.io/v1/', credentialsId: 'docker-login') {
+                        def image = docker.build("henryrao/inuesenv", '.')
+                        image.inside {
+                            parallel env: {
+                                sh '''
+                                ansible --version
+                                python --version
+                                '''
+                            }, functionality: {
+                                sh 'ansible-playbook entrypoint.yaml'
+                            },
+                            failFast: true
+                        }
+
+                        image.push(env.BRANCH_NAME)
+                    }
+                }
+
             } catch (e) {
                 echo "${e}"
                 currentBuild.result = FAILURE
