@@ -63,19 +63,18 @@ podTemplate(
                     }
                 }
 
-                stage('package') {
+                stage('containerize') {
                     withDockerRegistry(url: 'https://index.docker.io/v1/', credentialsId: 'docker-login') {
+                        
                         def image = docker.build("henryrao/inuesenv", '.')
+
                         image.inside {
-                            parallel env: {
-                                sh '''
-                                ansible --version
-                                python --version
-                                '''
-                            }, functionality: {
-                                sh 'ansible-playbook entrypoint.yaml'
-                            },
-                            failFast: true
+                            
+                            sh '''
+                            ansible --version
+                            python --version
+                            ansible-playbook entrypoint.yaml
+                            '''
                         }
 
                         image.push(env.BRANCH_NAME)

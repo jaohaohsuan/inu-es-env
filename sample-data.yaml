@@ -13,6 +13,7 @@
       with_items:
         - { f: 'sample-logs/1.json', p: 'logs-2016.05.27/amiast/1' }
         - { f: 'sample-queries/news.json', p: 'stored-query/queries/news' }
+      name: "filling fake data"
 
     - uri: |
         url="{{ es_address }}/stored-query/_search"
@@ -29,10 +30,13 @@
 
     - set_fact:
         percolate_failed: (percolate_result.json.hits.hits[0]._id != 'news')
+      name: "collecting result"
 
     - debug: var=percolate_result.json.hits.hits
       when: percolate_failed
+      name: "hits of percolate result"
 
     - fail:
         msg: "unexpected percolate search result"
       when: percolate_failed
+      name: "abort when percolating reach retries"
