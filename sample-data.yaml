@@ -11,7 +11,7 @@
         body={{ lookup('file', item.f) }}
         status_code=200,201
       with_items:
-        - { f: 'sample-logs/1.json', p: 'logs-2016.05.27/sample/1' }
+        - { f: 'sample-logs/1.json', p: 'logs-2016.05.27/amiast/1' }
         - { f: 'sample-queries/news.json', p: 'stored-query/queries/news' }
 
     - uri: |
@@ -24,6 +24,12 @@
       register: percolate_esult
       name: "percolate query testing"
 
+    - set_fact:
+        percolate_failed: (percolate_esult.json.hits.hits|length != 1 or percolate_esult.json.hits.hits[0]._id != 'news')
+
+    - debug: var=percolate_esult.json.hits.hits
+      when: percolate_failed
+
     - fail:
         msg: "unexpected percolate search result"
-      when: (percolate_esult.json.hits.hits|length != 1 or percolate_esult.json.hits.hits[0]._id != 'news')
+      when: percolate_failed
