@@ -21,13 +21,16 @@
         HEADER_Content-Type=application/json
         body={{ lookup('file', 'query-dsl/percolate.json') }}
         status_code=200
-      register: percolate_esult
+      register: percolate_result
+      until: percolate_result.json.hits.hits|length > 0
+      retries: 5
+      delay: 2
       name: "percolate query testing"
 
     - set_fact:
-        percolate_failed: (percolate_esult.json.hits.hits|length != 1 or percolate_esult.json.hits.hits[0]._id != 'news')
+        percolate_failed: (percolate_result.json.hits.hits[0]._id != 'news')
 
-    - debug: var=percolate_esult.json.hits.hits
+    - debug: var=percolate_result.json.hits.hits
       when: percolate_failed
 
     - fail:
