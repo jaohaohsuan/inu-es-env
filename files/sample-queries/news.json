@@ -1,0 +1,27 @@
+{
+    "query": {
+      "bool": {
+         "minimum_should_match": 1,
+         "should": [
+            {
+               "multi_match": {
+                  "query": "新闻",
+                  "fields": [
+                     "dialogs"
+                  ],
+                  "operator": "OR"
+               }
+            },
+            {
+               "multi_match": {
+                  "query": "国际",
+                  "fields": [
+                     "dialogs"
+                  ],
+                  "operator": "OR"
+               }
+            }
+         ]
+      }
+   }
+}

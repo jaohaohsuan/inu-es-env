@@ -1,0 +1,29 @@
+---
+- hosts: localhost
+  vars_files:
+    - vars_files/connections.yaml
+  tasks:
+    - uri: |
+        url="{{ es_address }}/{{ item.p }}"
+        method=PUT
+        body_format=json
+        HEADER_Content-Type=application/json
+        body={{ lookup('file', item.f) }}
+        status_code=200,201
+      with_items:
+        - { f: 'sample-logs/1.json', p: 'logs-2016.05.27/sample/1' }
+        - { f: 'sample-queries/news.json', p: 'stored-query/queries/news' }
+
+    - uri: |
+        url="{{ es_address }}/stored-query/_search"
+        method=GET
+        body_format=json
+        HEADER_Content-Type=application/json
+        body={{ lookup('file', 'query-dsl/percolate.json') }}
+        status_code=200
+      register: percolate_esult
+      name: "percolate query testing"
+
+    - fail:
+        msg: "unexpected percolate search result"
+      when: (percolate_esult.json.hits.hits|length != 1 or percolate_esult.json.hits.hits[0]._id != 'news')
