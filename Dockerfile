@@ -3,8 +3,10 @@ FROM alpine:edge
 RUN apk --no-cache add ansible bash vim
 ADD hosts /etc/ansible/hosts
 WORKDIR /opt/ansible
+ADD callback_plugins ./callback_plugins
 ADD files ./files
 ADD templates ./templates
+ADD vars_files ./vars_files
 ADD *.yaml ./
 
 ENV ELASTICSEARCH_ADDR=127.0.0.1
