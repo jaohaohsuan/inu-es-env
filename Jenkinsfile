@@ -28,6 +28,9 @@ podTemplate(
                         setElasticsearchEndPoint(params.ELASTICSEARCH_ADDR, params.ELASTICSEARCH_PORT)
                     }
                     else {
+                        docker.image('busybox').inside('--privileged') {
+                            sh 'sysctl -w vm.max_map_count=262144'
+                        }
                         esContaienr = docker.image('docker.elastic.co/elasticsearch/elasticsearch:5.3.0')
                                             .run('-e "xpack.security.enabled=false" -e "http.host=0.0.0.0" -e "transport.host=0.0.0.0"')
 
