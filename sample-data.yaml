@@ -23,16 +23,16 @@
         body={{ lookup('file', 'query-dsl/percolate.json') }}
         status_code=200
       register: percolate_result
-      until: percolate_result.json.hits.hits|length > 0
+      until: percolate_result.json.matches|length > 0
       retries: 5
       delay: 2
       name: "percolate query testing"
 
     - set_fact:
-        percolate_failed: (percolate_result.json.hits.hits[0]._id != 'news')
+        percolate_failed: (percolate_result.json.matches[0]._id != 'news')
       name: "collecting result"
 
-    - debug: var=percolate_result.json.hits.hits
+    - debug: var=percolate_result.json.matches
       when: percolate_failed
       name: "hits of percolate result"
 
