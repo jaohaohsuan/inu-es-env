@@ -1,0 +1,25 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ template "name" . }}
+spec:
+  template:
+    metadata:
+      name: {{ template "name" . }}
+    spec:
+      containers:
+      - name: ansible
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        env:
+          - name: ELASTICSEARCH_ADDR
+            value: {{ .Values.target.elasticsearch.host | quote }}
+          - name: ELASTICSEARCH_PORT
+            value: {{ .Values.target.elasticsearch.port }}
+        command:
+          - "ansible-playbook"
+          {{- range .Values.playbooks }}
+          - {{ . | quote }}
+          {{- end }}
+      restartPolicy: OnFailure
+
