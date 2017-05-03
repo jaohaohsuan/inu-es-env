@@ -11,7 +11,8 @@ podTemplate(
             containerTemplate(name: 'jnlp', image: 'henryrao/jnlp-slave', args: '${computer.jnlpmac} ${computer.name}', alwaysPullImage: true)
     ],
     volumes: [
-            hostPathVolume(mountPath: '/var/run/docker.sock', hostPath: '/var/run/docker.sock')
+            hostPathVolume(mountPath: '/var/run/docker.sock', hostPath: '/var/run/docker.sock'),
+            persistentVolumeClaim(claimName: 'helm-repository', mountPath: '/var/helm/repo', readOnly: false)
     ]) {
 
     node('inuesenv') {
