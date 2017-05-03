@@ -53,7 +53,7 @@
         method=PUT
         body_format=json
         HEADER_Content-Type=application/json
-        body={{ lookup('template','stored-query-percolator5.properties.json.j2') }}
+        body={{ lookup('template','stored-query-percolator.properties.json.j2') }}
         status_code=200
       name: "Update queries mapping (5.x percolate)"
 
