@@ -87,11 +87,11 @@ podTemplate(
 
                 stage('package') {
                     docker.image('henryrao/helm:2.3.1').inside('') { c ->
-                        sh """
+                        sh '''
                         # packaging
-                        helm package --destination /var/helm/repo ${env.JOB_BASE_NAME}
+                        helm package --destination /var/helm/repo inu-es-env
                         helm repo index --url https://grandsys.github.io/helm-repository/ --merge /var/helm/repo/index.yaml /var/helm/repo
-                        """
+                        '''
                     }
                     build job: 'helm-repository/master'
                 }
