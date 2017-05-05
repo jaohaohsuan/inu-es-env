@@ -13,3 +13,9 @@ helm ls
 helm del --purge [release_name]
 kubectl delete pvc storage-es-data-{0,1}
 ```
+
+upgrade image
+
+```
+helm upgrade --set=elasticsearch.image.repository=docker.io/elasticsearch,elasticsearch.image.tag=2.3.4 [release_name]
+```
