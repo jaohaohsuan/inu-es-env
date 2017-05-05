@@ -86,9 +86,16 @@ podTemplate(
                 }
 
                 stage('package') {
-                    docker.image('henryrao/helm:2.3.1').inside('') { c ->
+                
+                    def helmImage = 'henryrao/helm:2.3.1'
+
+                    sh "docker pull ${helmImage}"
+
+                    docker.image(helmImage).inside('') { c ->
                         sh '''
                         # packaging
+                        helm repo add grandsys https://grandsys.github.io/helm-repository
+                        helm dep up inu-es-env
                         helm package --destination /var/helm/repo inu-es-env
                         helm repo index --url https://grandsys.github.io/helm-repository/ --merge /var/helm/repo/index.yaml /var/helm/repo
                         '''
