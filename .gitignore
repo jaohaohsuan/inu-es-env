@@ -2,3 +2,5 @@
 *.swp
 *.retry
 *.pyc
+*.lock
+*.tgz
