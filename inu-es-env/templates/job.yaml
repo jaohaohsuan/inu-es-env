@@ -1,11 +1,11 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ template "name" . }}
+  name: {{ printf "setup-%s-%s" .Chart.Name .Release.Name | trunc 63 }}
 spec:
   template:
     metadata:
-      name: {{ template "name" . }}
+      name: {{ printf "setup-%s-%s" .Chart.Name .Release.Name | trunc 63 }}
     spec:
       containers:
       - name: ansible
@@ -13,9 +13,9 @@ spec:
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         env:
           - name: ELASTICSEARCH_ADDR
-            value: {{ printf "%s.%s.svc.cluster.local" .Values.elasticsearch.service.name .Release.Namespace }}
+            value: {{ printf "%s.%s.svc.cluster.local" .Values.elasticsearch.service.name .Release.Namespace }} 
           - name: ELASTICSEARCH_PORT
-            value: 9200
+            value: "9200"
         command:
           - "ansible-playbook"
           {{- range .Values.playbooks }}
