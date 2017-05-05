@@ -1,5 +1,15 @@
 # inu-es-env
-for local test
+
+install with helm
+
 ```
-docker run -p 9200:9200 -e "xpack.security.enabled=false" -e "http.host=0.0.0.0" -e "transport.host=127.0.0.1" docker.elastic.co/elasticsearch/elasticsearch:5.3.0
+helm repo add grandsys https://grandsys.github.io/helm-repository
+helm install --set=elasticsearch.service.name=es grandsys/inu-es-env
+```
+purge
+
+```
+helm ls
+helm del --purge [release_name]
+kubectl delete pvc storage-es-data-{0,1}
 ```
