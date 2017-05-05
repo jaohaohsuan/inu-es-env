@@ -3,13 +3,8 @@
 # Declare variables to be passed into your templates.
 image:
   repository: henryrao/inuesenv
-  tag: 5.3
+  tag: 2.3
   pullPolicy: IfNotPresent
 playbooks:
   - "logs-index-template.yaml"
   - "stored-query-config.yaml"
-target:
-  elasticsearch:
-    host: 127.0.0.1
-    port: 9200
-

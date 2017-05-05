@@ -13,9 +13,9 @@ spec:
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         env:
           - name: ELASTICSEARCH_ADDR
-            value: {{ .Values.target.elasticsearch.host | quote }}
+            value: {{ printf "%s.%s.svc.cluster.local" .Values.elasticsearch.service.name .Release.Namespace }}
           - name: ELASTICSEARCH_PORT
-            value: {{ .Values.target.elasticsearch.port }}
+            value: 9200
         command:
           - "ansible-playbook"
           {{- range .Values.playbooks }}
