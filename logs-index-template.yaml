@@ -7,12 +7,13 @@
     inu_datasources: "{{ lookup('file','inu-datasources.json') }}"
     logs_template: "{{ lookup('template','logs-template.json.j2') }}"
   tasks:
-    - uri: |
-        url={{ es_address }}/_template/template1
-        method=PUT
-        body_format=json
-        HEADER_Content-Type=application/json
-        body={{ logs_template }}
-        status_code=200
+    - uri:
+        url: {{ es_address }}/_template/template1
+        method: PUT
+        body_format: json
+        headers:
+          Content-Type: "application/json"
+        body: {{ logs_template }}
+        status_code: 200
       register: api_result
       name: "Set logs index template"
