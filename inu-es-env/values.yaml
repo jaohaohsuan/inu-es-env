@@ -2,7 +2,7 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 image:
-  repository: henryrao/inuesenv
+  repository: docker.grandsys.com/inu/inuesenv
   tag: 2.3
   pullPolicy: IfNotPresent
 playbooks:

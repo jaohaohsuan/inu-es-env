@@ -3,3 +3,4 @@ description: config Elasticsearch for iNu
 name: inu-es-env
 version: 0.1.1
 tillerVersion: ">=2.3.1"
+icon: https://avatars1.githubusercontent.com/u/15859888?v=4&s=400

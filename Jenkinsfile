@@ -1,18 +1,16 @@
-properties(
-    [
-        [
-            $class: 'jenkins.model.BuildDiscarderProperty', strategy: [$class: 'LogRotator', numToKeepStr: '5']
-        ]
-    ]
-)
 podTemplate(
     label: 'inuesenv',
     containers: [
-            containerTemplate(name: 'jnlp', image: 'henryrao/jnlp-slave', args: '${computer.jnlpmac} ${computer.name}', alwaysPullImage: true)
-    ],
+        containerTemplate(name: 'jnlp', image: env.JNLP_SLAVE_IMAGE, args: '${computer.jnlpmac} ${computer.name}', alwaysPullImage: true),
+        containerTemplate(name: 'kube', image: "${env.PRIVATE_REGISTRY}/library/kubectl:v1.7.2", ttyEnabled: true, command: 'cat'),
+        containerTemplate(name: 'helm', image: 'henryrao/helm:2.3.1', ttyEnabled: true, command: 'cat'),
+        containerTemplate(name: 'dind', image: 'docker:stable-dind', privileged: true, ttyEnabled: true, command: 'dockerd', args: '--host=unix:///var/run/docker.sock --host=tcp://0.0.0.0:2375 --storage-driver=vfs')
+  ],
     volumes: [
-            hostPathVolume(mountPath: '/var/run/docker.sock', hostPath: '/var/run/docker.sock'),
-            persistentVolumeClaim(claimName: 'helm-repository', mountPath: '/var/helm/repo', readOnly: false)
+        emptyDirVolume(mountPath: '/var/run', memory: false),
+        hostPathVolume(mountPath: "/etc/docker/certs.d/${env.PRIVATE_REGISTRY}/ca.crt", hostPath: "/etc/docker/certs.d/${env.PRIVATE_REGISTRY}/ca.crt"),
+        hostPathVolume(mountPath: '/home/jenkins/.kube/config', hostPath: '/etc/kubernetes/admin.conf'),
+        persistentVolumeClaim(claimName: env.HELM_REPOSITORY, mountPath: '/var/helm/', readOnly: false)
     ]) {
 
     node('inuesenv') {
@@ -21,7 +19,7 @@ podTemplate(
             def stopElasticsearch = { }
             try {
                 
-                stage('prepare') {
+                stage('run elasticsearch') {
                     checkout scm
 
                     if (params.ELASTICSEARCH_ADDR && params.ELASTICSEARCH_PORT) {   
@@ -29,11 +27,9 @@ podTemplate(
                         setElasticsearchEndPoint(params.ELASTICSEARCH_ADDR, params.ELASTICSEARCH_PORT)
                     }
                     else {
-                        
-                        esContaienr = docker.image('henryrao/elasticsearch:2.3.3').run('--privileged -e ES_HEAP_SIZE=128m')
-
+                        esContaienr = docker.image("${env.PRIVATE_REGISTRY}/library/elasticsearch:2.3.3").run('--network=host --privileged -e ES_HEAP_SIZE=128m')
                         stopElasticsearch = { esContaienr.stop() }
-                        setElasticsearchEndPoint(containerIP(esContaienr), 9200)
+                        setElasticsearchEndPoint("127.0.0.1", 9200)
                     }
 
                     timeout(time: 60, unit: 'SECONDS') {
@@ -44,7 +40,7 @@ podTemplate(
                     }
                 }
                 
-                stage('config') {
+                stage('setup') {
                     
                     parallel IndexTemplate: {
                         ansiblePlaybook colorized: true, playbook: 'logs-index-template.yaml', inventory: 'hosts', extras: ''
@@ -54,7 +50,7 @@ podTemplate(
                     failFast: false
                 }
 
-                stage('test') {
+                stage('run test') {
                     
                     if(params.WITHOUT_FAKEDATA) {
                         echo 'creating fake data skipped'
@@ -64,50 +60,81 @@ podTemplate(
                     }
                 }
 
-                stage('containerize') {
-                    withDockerRegistry(url: 'https://index.docker.io/v1/', credentialsId: 'docker-login') {
-                        
-                        def image = docker.build("henryrao/inuesenv", '.')
+                def image
+                stage('build image') {
+                    image = docker.build("${env.PRIVATE_REGISTRY}/inu/inuesenv", '.')
+                }
 
-                        image.inside {
-                            
-                            sh '''
-                            ansible --version
-                            python --version
-                            ansible-playbook entrypoint.yaml
-                            '''
-                        }
-
+                stage('test image') {
+                    image.inside {
+                        sh '''
+                        ansible --version
+                        python --version
+                        ansible-playbook entrypoint.yaml
+                        '''
+                    }
+                }
+                
+                stage('push image') {
+                    withDockerRegistry(url: env.PRIVATE_REGISTRY_URL, credentialsId: 'docker-login') {
                         image.push(env.BRANCH_NAME)
                     }
                 }
 
-                stage('package') {
-                
-                    def helmImage = 'henryrao/helm:2.3.1'
+                def last_commit = sh(script: 'git log --format=%B -n 1', returnStdout: true).trim()
 
-                    sh "docker pull ${helmImage}"
+                container('helm') {
+                    sh 'helm init --client-only'
+                    sh "helm repo add grandsys ${env.HELM_PUBLIC_REPO_URL}"
+                    sh 'helm repo update'
 
-                    docker.image(helmImage).inside('') { c ->
-                        sh '''
-                        # packaging
-                        helm repo add grandsys https://grandsys.github.io/helm-repository
-                        helm dep up inu-es-env
-                        helm package --destination /var/helm/repo inu-es-env
-                        helm repo index --url https://grandsys.github.io/helm-repository/ --merge /var/helm/repo/index.yaml /var/helm/repo
-                        '''
+                    def releaseName = "inu-es-env-release-${env.BUILD_ID}"
+
+                    try {
+                        dir('inu-es-env') {
+                            stage('test chart') {
+                                sh 'helm dep up .'
+                                sh 'helm lint .'
+                                def service = "inu-es-test-${env.BUILD_ID}"
+                                sh "helm install --set=service.name=${service},replicaCount.data=1 -n ${releaseName} ."
+                                sh "helm test ${releaseName} --cleanup"
+                            }
+                        }
+
+                        stage('package chart') {
+                            dir('inu-es-env') {
+                                echo 'archive chart'
+                                sh 'helm package --destination /var/helm/repo .'
+                                
+                                echo 'generate an index file'
+                                sh """
+                                merge=`[[ -e '/var/helm/repo/index.yaml' ]] && echo '--merge /var/helm/repo/index.yaml' || echo ''`
+                                helm repo index --url ${env.HELM_PUBLIC_REPO_URL} \$merge /var/helm/repo
+                                """
+                            }
+                            build job: 'helm-repository/master', parameters: [string(name: 'commiter', value: "${env.JOB_NAME}\ncommit: ${last_commit}")]
+                        }
+
+                    } catch (error) {
+                        echo "${e}"
+                        currentBuild.result = FAILURE
+                    } finally {
+                        stage('clean up') {
+                            container('helm') {
+                                sh "helm delete --purge ${releaseName}"
+                            }
+                            container('kube') {
+                                sh "kubectl delete pvc -l release=${releaseName}"
+                            }
+                        }
                     }
-                    build job: 'helm-repository/master'
                 }
-
             } catch (e) {
                 echo "${e}"
                 currentBuild.result = FAILURE
             }
             finally {
                 stopElasticsearch()
-                step([$class         : 'LogParserPublisher', failBuildOnError: true, unstableOnWarning: true, showGraphs: true,
-                      projectRulePath: 'jenkins-rule-logparser', useProjectRule: true])
             }
         }
     }

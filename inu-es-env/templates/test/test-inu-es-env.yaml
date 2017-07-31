@@ -1,0 +1,16 @@
+{{- $host := printf "http://%s.%s.svc.cluster.local:9200" .Values.elasticsearch.service.name .Release.Namespace -}}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ .Release.Name }}-{{ template "name" . }}-test"
+  annotations:
+    "helm.sh/hook": test-success
+spec:
+  containers:
+  - name: toolbox
+    image: docker.grandsys.com/library/toolbox:alpine
+    command:
+      - "/bin/bash"
+      - "-c"
+      - 'curl -s {{ $host }}/_cat/health | grep green'
+  restartPolicy: OnFailure

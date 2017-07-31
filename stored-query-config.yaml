@@ -21,7 +21,8 @@
         url={{ es_address }}/stored-query
         method=PUT
         body_format=json
-        HEADER_Content-Type=application/json
+        headers:
+          Content-Type: "application/json"
         body={{ lookup('file', 'stored-query.index.settings.json') }}
         status_code=200,201
       name: Create stored-query Index
@@ -37,7 +38,8 @@
         url={{ es_address }}/stored-query/_settings
         method=PUT
         body_format=json
-        HEADER_Content-Type=application/json
+        headers:
+          Content-Type: "application/json"
         body={{ lookup('template', 'stored-query.settings.json.j2') }}
         status_code=200
       name: Update stored-query settings
@@ -52,7 +54,8 @@
         url={{ es_address }}/stored-query/_mapping/.percolator
         method=PUT
         body_format=json
-        HEADER_Content-Type=application/json
+        headers:
+          Content-Type: "application/json"
         body={{ lookup('template','stored-query-percolator.properties.json.j2') }}
         status_code=200
       name: "Update stored-queries queries mapping"
@@ -61,7 +64,8 @@
         url={{ es_address }}/stored-query/_mapping/{{ item.type }}
         method=PUT
         body_format=json
-        HEADER_Content-Type=application/json
+        headers:
+          Content-Type: "application/json"
         body={{ lookup('template','stored-query-datasource.properties.json.j2') }}
         status_code=200
       with_items: "{{ inu_datasources }}"
