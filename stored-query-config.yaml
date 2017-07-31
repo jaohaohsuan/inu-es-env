@@ -10,59 +10,63 @@
         msg: "target elasticsearch : {{ es_address }}"
       name: elasticsearch rest api connection string
 
-    - uri: |
-        url={{ es_address }}/stored-query
-        method=HEAD
-        status_code=200,404
+    - uri:
+        url: "{{ es_address }}/stored-query"
+        method: HEAD
+        status_code: "200,404"
       register: api_result
       name: HEAD stored-query index
 
-    - uri: |
-        url={{ es_address }}/stored-query
-        method=PUT
-        body_format=json
-        HEADER_Content-Type=application/json
-        body={{ lookup('file', 'stored-query.index.settings.json') }}
-        status_code=200,201
+    - uri:
+        url: "{{ es_address }}/stored-query"
+        method: PUT
+        body_format: json
+        headers:
+          Content-Type: "application/json"
+        body: "{{ lookup('file', 'stored-query.index.settings.json') }}"
+        status_code: "200,201"
       name: Create stored-query Index
       when: api_result.status == 404
 
-    - uri: |
-        url={{ es_address }}/stored-query/_close
-        method=POST
-        status_code=200
+    - uri:
+        url: "{{ es_address }}/stored-query/_close"
+        method: POST
+        status_code: "200"
       name: Close stored-query
 
-    - uri: |
-        url={{ es_address }}/stored-query/_settings
-        method=PUT
-        body_format=json
-        HEADER_Content-Type=application/json
-        body={{ lookup('template', 'stored-query.settings.json.j2') }}
-        status_code=200
+    - uri:
+        url: "{{ es_address }}/stored-query/_settings"
+        method: PUT
+        body_format: json
+        headers:
+          Content-Type: "application/json"
+        body: "{{ lookup('template', 'stored-query.settings.json.j2') }}"
+        status_code: "200"
       name: Update stored-query settings
 
-    - uri: |
-        url={{ es_address }}/stored-query/_open
-        method=POST
-        status_code=200
+    - uri:
+        url: "{{ es_address }}/stored-query/_open"
+        method: POST
+        status_code: "200"
       name: Open stored-query
 
-    - uri: |
-        url={{ es_address }}/stored-query/_mapping/.percolator
-        method=PUT
-        body_format=json
-        HEADER_Content-Type=application/json
-        body={{ lookup('template','stored-query-percolator.properties.json.j2') }}
-        status_code=200
+    - uri:
+        url: "{{ es_address }}/stored-query/_mapping/.percolator"
+        method: PUT
+        body_format: json
+        headers:
+          Content-Type: "application/json"
+        body: "{{ lookup('template','stored-query-percolator.properties.json.j2') }}"
+        status_code: "200"
       name: "Update stored-queries queries mapping"
 
-    - uri: |
-        url={{ es_address }}/stored-query/_mapping/{{ item.type }}
-        method=PUT
-        body_format=json
-        HEADER_Content-Type=application/json
-        body={{ lookup('template','stored-query-datasource.properties.json.j2') }}
-        status_code=200
+    - uri:
+        url: "{{ es_address }}/stored-query/_mapping/{{ item.type }}"
+        method: PUT
+        body_format: json
+        headers:
+          Content-Type: "application/json"
+        body: "{{ lookup('template','stored-query-datasource.properties.json.j2') }}"
+        status_code: "200"
       with_items: "{{ inu_datasources }}"
       name: "Update datasource mapping"
