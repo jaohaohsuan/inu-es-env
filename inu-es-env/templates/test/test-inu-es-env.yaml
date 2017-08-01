@@ -1,19 +1,6 @@
 {{- $host := printf "http://%s.%s.svc.cluster.local:9200" .Values.elasticsearch.service.name .Release.Namespace -}}
 ---
 apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: "{{ .Release.Name }}-{{ template "name" . }}-test"
-  annotations:
-    "helm.sh/hook": test-success
-data:
-  entrypoint: |
-    #!/bin/bash
-
-    set -xe
-    curl -s {{ $host }}/_cat/health | grep green
----
-apiVersion: v1
 kind: Pod
 metadata:
   name: "{{ .Release.Name }}-{{ template "name" . }}-test"
@@ -25,12 +12,6 @@ spec:
     image: docker.grandsys.com/library/toolbox:alpine
     command:
       - '/bin/bash'
-      - '/script/entrypoint'
-    volumeMounts:
-      - name: scripts
-        mountPath: /scripts
-  volumes:
-  - name: scripts
-    configMap:
-      name: "{{ .Release.Name }}-{{ template "name" . }}-test"
+      - '-c'
+      - 'curl -s {{ $host }}/_cat/health | grep green'
   restartPolicy: OnFailure
