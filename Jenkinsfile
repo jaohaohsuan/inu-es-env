@@ -96,7 +96,7 @@ podTemplate(
                                 sh 'helm dep up .'
                                 sh 'helm lint .'
                                 def service = "inu-es-test-${env.BUILD_ID}"
-                                sh "helm install --set=service.name=${service},replicaCount.data=1 -n ${releaseName} ."
+                                sh "helm install --set=elasticsearch.service.name=${service},replicaCount.data=1 -n ${releaseName} ."
                                 sh "helm test ${releaseName} --cleanup"
                             }
                         }
