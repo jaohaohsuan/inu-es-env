@@ -4,3 +4,4 @@
 *.pyc
 *.lock
 *.tgz
+inu-es-env/charts/*.tgz
